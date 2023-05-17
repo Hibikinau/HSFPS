@@ -1,6 +1,7 @@
 #include<vector>
 #include<memory>
 #include"gameMain.h"
+#include"allMode.h"
 using namespace DxLib;
 
 // ŽÀ‘Ì
@@ -9,7 +10,7 @@ gameMain				appFrame;
 bool gameMain::Initialize(HINSTANCE hInstance, ModeServer* ms) {
 	if (!base::Initialize(hInstance, ms)) { return false; }
 	_modeServer = ms;
-	//_modeServer->Add(std::make_unique<modeT>(_modeServer), 1, MODE_TITLE);
+	_modeServer->Add(std::make_unique<modeT>(_modeServer), 1, MODE_TITLE);
 
 	return true;
 }

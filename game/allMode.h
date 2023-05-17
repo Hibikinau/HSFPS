@@ -5,3 +5,4 @@
 #include"modeGame.h"
 
 #define MODE_TITLE "title"
+#define MODE_GAME "game"

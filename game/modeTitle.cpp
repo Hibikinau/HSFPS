@@ -74,7 +74,7 @@ bool modeT::loadData(const char* dir, valData* _val)
 
 bool	modeT::Initialize()
 {
-	_cg = _modeServer->RS.loadGraphR("game/res/ƒ^ƒCƒgƒ‹.png");
+	_cg = _modeServer->RS.loadGraphR("res/title.png");
 
 	return true;
 }
@@ -83,8 +83,7 @@ bool	modeT::Process()
 {
 	if ((_imputInf._gTrgb[KEY_INPUT_RETURN] || _imputInf._gTrgp[XINPUT_BUTTON_A]))
 	{
-		//_modeServer->Add(std::make_unique<modeE>(_modeServer), 1, MODE_END);
-		//_modeServer->Add(std::make_unique<modeMM>(_modeServer), 1, MODE_MM);
+		_modeServer->Add(std::make_unique<modeG>(_modeServer), 1, MODE_GAME);
 		return false;
 	}
 	return true;
@@ -92,6 +91,7 @@ bool	modeT::Process()
 
 bool	modeT::Render()
 {
+	DrawGraph(0, 0, _cg, false);
 
 	return true;
 }

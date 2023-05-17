@@ -59,7 +59,7 @@ bool	modeG::Initialize()
 	Effekseer_StartNetwork(60000);// ネットワーク機能を有効にする
 
 	_valData = &_modeServer->_valData;
-	modelImport("game/res/Stage1/Stage1.mv1", 10.f, &stage, &_modeServer->RS);
+	modelImport("res/kariHaikei/Haikei demo.mv1", 10.f, &stage, &_modeServer->RS);
 	makeChar(this, &_modeServer->RS, std::make_unique<PL>(), Char_PL);
 
 	countTime = GetNowCount();
@@ -77,7 +77,7 @@ bool	modeG::Initialize()
 	// シャドウマップに描画する範囲を設定
 	SetShadowMapDrawArea(ShadowMapHandle, VGet(-5000.0f, -1.0f, -5000.0f), VGet(5000.0f, 1000.0f, 5000.0f));
 
-	ChangeVolumeSoundMem(255 * (0.01 * _valData->soundMasterValume), BGM);
+	//ChangeVolumeSoundMem(255 * (0.01 * _valData->soundMasterValume), BGM);
 
 	//読み込んだ3dモデルのサイズ調整
 	for (auto i = charBox.begin(); i != charBox.end(); i++)
