@@ -42,6 +42,9 @@
     <ClCompile Include="player.cpp">
       <Filter>ソース ファイル\char</Filter>
     </ClCompile>
+    <ClCompile Include="bullet.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="gameMain.h">
@@ -64,6 +67,9 @@
     </ClInclude>
     <ClInclude Include="motionDefineList.h">
       <Filter>ヘッダー ファイル\char</Filter>
+    </ClInclude>
+    <ClInclude Include="bullet.h">
+      <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

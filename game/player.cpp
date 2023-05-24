@@ -34,7 +34,7 @@ bool PL::Initialize()
 	//各変数の初期化
 	spd = runSpd;
 	type = 1;
-	g = 1.f;
+	g = 3.f;
 	isCharge = 0;
 	Estate = _estate::NORMAL;
 	_statusInf.maxHitPoint = _statusInf.hitPoint = 200;
@@ -79,8 +79,50 @@ bool	PL::Terminate()
 }
 
 bool	PL::Process()
-{
+{/*
+	switch (setAction())
+	{
+	case pushButton::rClick:
+		break;
+	case pushButton::lClick:
+		break;
+	case pushButton::lShift:
+		break;
+	case pushButton::space:
+		break;
+	case pushButton::R:
+		break;
+	case pushButton::F:
+		break;
+	}*/
 
+	if (_imputInf->_gTrgb[KEY_INPUT_SPACE]) { _modelInf.vec.y += 60; }
+	if (_imputInf->_gTrgb[KEY_INPUT_LSHIFT])
+	{
+		float radian = *_cameraDirX * DX_PI_F / 180.0f;
+		_modelInf.vec.x += sin(radian) * 200;
+		_modelInf.vec.z += cos(radian) * 200;
+		radian = *_cameraDirY * DX_PI_F / 180.0f;
+		_modelInf.vec.y += radian * 80;
+	}
+	if ((GetMouseInput() & MOUSE_INPUT_LEFT) != 0)
+	{
+		float radian = *_cameraDirX * DX_PI_F / 180.0f;
+		float radian2 = *_cameraDirY * DX_PI_F / 180.0f;
+		auto bu = std::make_unique<bullet>();
+		bu->_modelInf.vec = VGet(sin(radian) * 200, radian2 * 80, cos(radian) * 200);
+		bu->_modelInf.pos = _modelInf.pos;
+		bulletData.emplace_back(std::move(bu));
+	}
+
+	//
+	charMove(40, *_cameraDirX, true);
+
+	for (int i = 0; i < bulletData.size(); i++) { bulletData[i]->Process(); }
+
+	_modelInf.pos = VAdd(_modelInf.pos, _modelInf.vec);
+	auto insVec = VScale(_modelInf.vec, 0.05);
+	_modelInf.vec = VSub(_modelInf.vec, VGet(insVec.x, 0, insVec.z));
 	return true;
 }
 
@@ -89,22 +131,39 @@ bool	PL::Render(float timeSpeed)
 	isAnimEnd = modelRender(&_modelInf, animSpd, timeSpeed);
 	//DrawCapsule3D(collCap.underPos, collCap.overPos, collCap.r, 8, GetColor(255, 0, 255), GetColor(0, 0, 0), false);
 
+	for (int i = 0; i < bulletData.size(); i++) { bulletData[i]->Render(); }
+
 	return true;
 }
 
-void PL::charMove(float Speed, float _Dir, bool isAnimChange)
+void PL::charMove(float Speed, float _DirX, bool isAnimChange)
 {
-	_Dir -= 180.f;
-	float radian = _Dir * DX_PI_F / 180.0f;
-	_modelInf.vec.x += sin(radian) * Speed;
-	_modelInf.vec.z += cos(radian) * Speed;
-
-	if (isAnimChange)
+	bool inputCheck = false;
+	int vecX = 0, vecY = 0;
+	if (_imputInf->_gKeyb[KEY_INPUT_W]) { inputCheck = true; }
+	if (!_imputInf->_gKeyb[KEY_INPUT_A] && _imputInf->_gKeyb[KEY_INPUT_D]
+		|| _imputInf->_gKeyb[KEY_INPUT_A] && !_imputInf->_gKeyb[KEY_INPUT_D])
 	{
-		animChange(PL_run, &_modelInf, true, true, false);//アニメーションを走りモーションに変更
-		animSpd = 1.f;
-		_modelInf.dir.y = _Dir + 180.f;
+		if (_imputInf->_gKeyb[KEY_INPUT_A])
+		{
+			inputCheck ? _DirX -= 45 : _DirX -= 90;
+			if (_imputInf->_gKeyb[KEY_INPUT_S]) { _DirX -= 45; }
+		}
+		if (_imputInf->_gKeyb[KEY_INPUT_D])
+		{
+			inputCheck ? _DirX += 45 : _DirX += 90;
+			if (_imputInf->_gKeyb[KEY_INPUT_S]) { _DirX += 45; }
+		}
+		inputCheck = true;
 	}
+	else if (_imputInf->_gKeyb[KEY_INPUT_S] && !inputCheck) { _DirX += 180; inputCheck = true; }
+	if (!inputCheck) { return; }
+
+	float radian = _DirX * DX_PI_F / 180.0f;
+	_modelInf.pos.x += sin(radian) * Speed;
+	_modelInf.pos.z += cos(radian) * Speed;
+
+	return;
 }
 
 bool PL::HPmath(float math, float Stan)
@@ -119,11 +178,11 @@ bool PL::HPmath(float math, float Stan)
 			{
 				if (isAwakening == 0)
 				{
-					if (!deadVoice) { PlaySoundMem(soundHandle[voiceStartNum + 27 + rand() % 4], DX_PLAYTYPE_BACK); }
+					//if (!deadVoice) { PlaySoundMem(soundHandle[voiceStartNum + 27 + rand() % 4], DX_PLAYTYPE_BACK); }
 					_statusInf.hitPoint += math; BPmath(std::abs(math) * 6);
 				}
 				PlaySoundMem(soundHandle[11], DX_PLAYTYPE_BACK);
-				Estate = _estate::DAMAGE;
+				//Estate = _estate::DAMAGE;
 				if (math < -50 || waitBlowTime > 0) { isBlow = true; }
 				else { waitBlowTime = 100; }
 			}
@@ -138,7 +197,7 @@ bool PL::HPmath(float math, float Stan)
 		_statusInf.hitPoint += math;
 		if (_statusInf.hitPoint > _statusInf.maxHitPoint) { _statusInf.hitPoint = _statusInf.maxHitPoint; }
 	}
-	if (dodgeTime > 0) { PlaySoundMem(soundHandle[voiceStartNum + 24 + rand() % 3], DX_PLAYTYPE_BACK); }
+	//if (dodgeTime > 0) { PlaySoundMem(soundHandle[voiceStartNum + 24 + rand() % 3], DX_PLAYTYPE_BACK); }
 
 	return isBlow;
 }
@@ -158,22 +217,7 @@ bool PL::BPmath(float math)
 pushButton PL::setAction()
 {
 
-	return ;
-}
-
-float PL::getMoveDir(bool checkUseCamDir)
-{
-	float _addDir = 0.f;
-
-	//移動先の角度指定
-	_addDir = (std::atan2(-_imputInf->lStickX, -_imputInf->lStickY) * 180.f) / DX_PI_F;
-	if (_imputInf->lStickY != 0 && _addDir == 0.f) { _addDir = 360.f; }
-	if (_addDir != 0) { _addDir += *_cameraDir + 180.f; }
-	if (camDir != -1.f && checkUseCamDir)
-	{
-		_addDir = camDir;
-	}
-	return _addDir;
+	return pushButton::F;
 }
 
 bool PL::CA_change(std::string name, const char* XorY)
@@ -182,27 +226,26 @@ bool PL::CA_change(std::string name, const char* XorY)
 	return true;
 }
 
-
 bool PL::CA_debugAttack(PL* insPL)
 {
-	insPL->setRecastTime = 60;
-	auto insDir = insPL->getMoveDir(true);
-	if (insDir != 0) { insPL->_modelInf.dir.y = insDir; }
-	animChange(PL_motion_hissatsu, &insPL->_modelInf, false, false, true);//アニメーションを覚醒時必殺技モーションに変更
-	insPL->animSpd = 1.f;
-	insPL->makeAttackCap(VGet(0.f, 0.f, 0.f), VGet(0.f, 0.f, 200.f), 20.f, 0.f, insPL->getAnimPlayTotalTime(), insPL->animSpd, true, 200.f + insPL->atkBuff, 5.f, rWeponParentFrame, VGet(0, 0, 0), 1);
-
-	auto a = VAdd(insPL->_modelInf.pos, getDirVecP(insPL->_modelInf.dir.y - 90, 300));
-	auto b = VAdd(insPL->_modelInf.pos, getDirVecP(insPL->_modelInf.dir.y + 90, 300));
-	auto bz = getDirVecP(insPL->_modelInf.dir.y, 30);
-	a.y = b.y = insPL->_modelInf.pos.y + 200;
-
-	insPL->makeAttackCap(a, b, 40.f, 10.f, 50 - 10.f, insPL->animSpd, false, insPL->_valData->plAtkNum[debugNum] + insPL->atkBuff, 5.f, -1, bz, 0);
-
-	int a2 = PlayEffekseer3DEffect(insPL->impactEfcHandle);
-	SetPosPlayingEffekseer3DEffect(a2, insPL->_modelInf.pos.x, insPL->_modelInf.pos.y + 120.f, insPL->_modelInf.pos.z);
-	SetRotationPlayingEffekseer3DEffect(a2, insPL->_modelInf.dir.x * (DX_PI_F / 180), insPL->_modelInf.dir.y * (DX_PI_F / 180), insPL->_modelInf.dir.z * (DX_PI_F / 180));
-	PlaySoundMem(insPL->soundHandle[6], DX_PLAYTYPE_BACK);
+	//	insPL->setRecastTime = 60;
+	//	auto insDir = insPL->getMoveDir();
+	//	if (insDir != 0) { insPL->_modelInf.dir.y = insDir; }
+	//	animChange(PL_motion_hissatsu, &insPL->_modelInf, false, false, true);//アニメーションを覚醒時必殺技モーションに変更
+	//	insPL->animSpd = 1.f;
+	//	insPL->makeAttackCap(VGet(0.f, 0.f, 0.f), VGet(0.f, 0.f, 200.f), 20.f, 0.f, insPL->getAnimPlayTotalTime(), insPL->animSpd, true, 200.f + insPL->atkBuff, 5.f, rWeponParentFrame, VGet(0, 0, 0), 1);
+	//
+	//	auto a = VAdd(insPL->_modelInf.pos, getDirVecP(insPL->_modelInf.dir.y - 90, 300));
+	//	auto b = VAdd(insPL->_modelInf.pos, getDirVecP(insPL->_modelInf.dir.y + 90, 300));
+	//	auto bz = getDirVecP(insPL->_modelInf.dir.y, 30);
+	//	a.y = b.y = insPL->_modelInf.pos.y + 200;
+	//
+	//	insPL->makeAttackCap(a, b, 40.f, 10.f, 50 - 10.f, insPL->animSpd, false, insPL->_valData->plAtkNum[debugNum] + insPL->atkBuff, 5.f, -1, bz, 0);
+	//
+	//	int a2 = PlayEffekseer3DEffect(insPL->impactEfcHandle);
+	//	SetPosPlayingEffekseer3DEffect(a2, insPL->_modelInf.pos.x, insPL->_modelInf.pos.y + 120.f, insPL->_modelInf.pos.z);
+	//	SetRotationPlayingEffekseer3DEffect(a2, insPL->_modelInf.dir.x * (DX_PI_F / 180), insPL->_modelInf.dir.y * (DX_PI_F / 180), insPL->_modelInf.dir.z * (DX_PI_F / 180));
+	//	PlaySoundMem(insPL->soundHandle[6], DX_PLAYTYPE_BACK);
 	return true;
 }
 

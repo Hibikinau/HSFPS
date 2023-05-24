@@ -155,6 +155,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="bullet.cpp" />
     <ClCompile Include="charBase.cpp" />
     <ClCompile Include="gameMain.cpp" />
     <ClCompile Include="modeGame.cpp" />
@@ -163,6 +164,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="allMode.h" />
+    <ClInclude Include="bullet.h" />
     <ClInclude Include="charBase.h" />
     <ClInclude Include="gameMain.h" />
     <ClInclude Include="modeGame.h" />

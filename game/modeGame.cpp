@@ -19,7 +19,7 @@ bool makeChar(modeG* insMG, Rserver* _rs, std::shared_ptr<CB> charPoint, const c
 	charPoint->setName(nameA);
 	charPoint->setGroundInf(&insMG->stage);
 	charPoint->allColl = &insMG->mAllColl;
-	charPoint->getInputKey(&insMG->_imputInf, &insMG->cameraDir);
+	charPoint->getInputKey(&insMG->_imputInf, &insMG->cameraDir, &insMG->cameraHigh);
 	insMG->charBox.emplace(nameA, std::move(charPoint));
 	return true;
 }
@@ -56,10 +56,11 @@ bool	modeG::Initialize()
 	SetUseBackCulling(false);
 	//SetUseASyncLoadFlag(true);
 	SetAlwaysRunFlag(true);
+	SetMouseDispFlag(false);
 	Effekseer_StartNetwork(60000);// ネットワーク機能を有効にする
 
 	_valData = &_modeServer->_valData;
-	modelImport("res/kariHaikei/Haikei demo.mv1", 10.f, &stage, &_modeServer->RS);
+	modelImport("res/ZENRYOKUstage/tsStage.mv1", 10.f, &stage, &_modeServer->RS);
 	makeChar(this, &_modeServer->RS, std::make_unique<PL>(), Char_PL);
 
 	countTime = GetNowCount();
@@ -141,61 +142,64 @@ bool	modeG::Process()
 	}
 
 
-//コマンド呼び出し部分
-useCommand();
+	//コマンド呼び出し部分
+	useCommand();
 
-//カメラ制御---------------------------------------------
-if (CheckHitKey(KEY_INPUT_RIGHT)) { cameraNtDir += 1.f; }
-if (CheckHitKey(KEY_INPUT_LEFT)) { cameraNtDir -= 1.f; }
-cameraNtDir += _imputInf.rStickX / 5000;
-cameraHigh -= _imputInf.rStickY / 5000;
-cameraMove();
-SetCameraPositionAndTarget_UpVecY(cameraPos, cameraFor);
-Effekseer_Sync3DSetting();
+	//カメラ制御---------------------------------------------
+	int XBuf, YBuf;
 
-//影の明るさ調整-----------------------------------------
-if (CheckHitKey(KEY_INPUT_UP)) { bright += .01f; }
-if (CheckHitKey(KEY_INPUT_DOWN)) { bright -= .01f; }
-if (bright < 0) { bright = 0; }
-if (bright > 1) { bright = 1; }
-SetGlobalAmbientLight(GetColorF(bright, bright, bright, 0.0f));
-debugWardBox.emplace_back("影の明るさ  = " + std::to_string(bright));
-debugWardBox.emplace_back("自機のHP = " + std::to_string(plStatus.hitPoint));
-debugWardBox.emplace_back("自機のBP = " + std::to_string(plStatus.bloodPoint));
-debugWardBox.emplace_back(std::to_string(
-	(std::atan2(-_imputInf.lStickX, _imputInf.lStickY) * 180.f) / DX_PI_F));
-debugWardBox.emplace_back("入れ替え技Xのリキャスト = " + std::to_string(plRecastTimeX));
-debugWardBox.emplace_back("入れ替え技Yのリキャスト = " + std::to_string(plRecastTimeY));
-debugWardBox.emplace_back("現在のFPS値/" + std::to_string(FPS));
-debugWardBox.emplace_back("弱攻撃1のフレーム数/" + std::to_string(_valData->plAtkSpd1));
-debugWardBox.emplace_back("弱攻撃2のフレーム数/" + std::to_string(_valData->plAtkSpd2));
-debugWardBox.emplace_back("弱攻撃3のフレーム数/" + std::to_string(_valData->plAtkSpd3));
-debugWardBox.emplace_back("弱攻撃4のフレーム数/" + std::to_string(_valData->plAtkSpd4));
-debugWardBox.emplace_back("ガード出だしのモーションスピード/" + std::to_string(_valData->counterSpd));
-debugWardBox.emplace_back("カウンターの総受付時間/" + std::to_string(_valData->_counterTime));
-debugWardBox.emplace_back("残りのカウンター受付時間/" + std::to_string(_valData->plCTimeN));
-debugWardBox.emplace_back("x." + std::to_string(static_cast<int>(plMI->pos.x))
-	+ "/y." + std::to_string(static_cast<int>(plMI->pos.y))
-	+ "/z." + std::to_string(static_cast<int>(plMI->pos.z)));
+	GetMousePoint(&XBuf, &YBuf);
+	SetMousePoint(640, 360);
+	cameraDir -= (640 - XBuf) * 0.05;
+	cameraHigh += (360 - YBuf) * 0.05;
 
-//当たり判定計算呼び出し
-collHitCheck();
+	cameraMove();
+	SetCameraPositionAndTarget_UpVecY(cameraPos, cameraFor);
+	Effekseer_Sync3DSetting();
 
-//メニュー画面呼び出し
-if (_imputInf._gTrgb[KEY_INPUT_M] || _imputInf._gTrgp[XINPUT_BUTTON_START])
-{
-	//_modeServer->Add(std::make_unique<modeM>(_modeServer), 1, MODE_MENU);
-}
+	//影の明るさ調整-----------------------------------------
+	if (CheckHitKey(KEY_INPUT_UP)) { bright += .01f; }
+	if (CheckHitKey(KEY_INPUT_DOWN)) { bright -= .01f; }
+	if (bright < 0) { bright = 0; }
+	if (bright > 1) { bright = 1; }
+	SetGlobalAmbientLight(GetColorF(bright, bright, bright, 0.0f));
+	debugWardBox.emplace_back("影の明るさ  = " + std::to_string(bright));
+	debugWardBox.emplace_back("自機のHP = " + std::to_string(plStatus.hitPoint));
+	debugWardBox.emplace_back("自機のBP = " + std::to_string(plStatus.bloodPoint));
+	debugWardBox.emplace_back(std::to_string(
+		(std::atan2(-_imputInf.lStickX, _imputInf.lStickY) * 180.f) / DX_PI_F));
+	debugWardBox.emplace_back("入れ替え技Xのリキャスト = " + std::to_string(plRecastTimeX));
+	debugWardBox.emplace_back("入れ替え技Yのリキャスト = " + std::to_string(plRecastTimeY));
+	debugWardBox.emplace_back("現在のFPS値/" + std::to_string(FPS));
+	debugWardBox.emplace_back("弱攻撃1のフレーム数/" + std::to_string(_valData->plAtkSpd1));
+	debugWardBox.emplace_back("弱攻撃2のフレーム数/" + std::to_string(_valData->plAtkSpd2));
+	debugWardBox.emplace_back("弱攻撃3のフレーム数/" + std::to_string(_valData->plAtkSpd3));
+	debugWardBox.emplace_back("弱攻撃4のフレーム数/" + std::to_string(_valData->plAtkSpd4));
+	debugWardBox.emplace_back("ガード出だしのモーションスピード/" + std::to_string(_valData->counterSpd));
+	debugWardBox.emplace_back("カウンターの総受付時間/" + std::to_string(_valData->_counterTime));
+	debugWardBox.emplace_back("残りのカウンター受付時間/" + std::to_string(_valData->plCTimeN));
+	debugWardBox.emplace_back("x." + std::to_string(static_cast<int>(plMI->pos.x))
+		+ "/y." + std::to_string(static_cast<int>(plMI->pos.y))
+		+ "/z." + std::to_string(static_cast<int>(plMI->pos.z)));
 
-if (_imputInf._gTrgb[KEY_INPUT_H])
-{
-	_valData->hitstopF = 10;
-}
+	//当たり判定計算呼び出し
+	collHitCheck();
 
-if (_imputInf._gTrgb[KEY_INPUT_A]) { swordGlitchAnimNum = 0; }
-// Effekseerにより再生中のエフェクトを更新する。
-UpdateEffekseer3D();
-return true;
+	//メニュー画面呼び出し
+	if (_imputInf._gTrgb[KEY_INPUT_M] || _imputInf._gTrgp[XINPUT_BUTTON_START])
+	{
+		//_modeServer->Add(std::make_unique<modeM>(_modeServer), 1, MODE_MENU);
+	}
+
+	if (_imputInf._gTrgb[KEY_INPUT_H])
+	{
+		_valData->hitstopF = 10;
+	}
+
+	if (_imputInf._gTrgb[KEY_INPUT_A]) { swordGlitchAnimNum = 0; }
+	// Effekseerにより再生中のエフェクトを更新する。
+	UpdateEffekseer3D();
+	return true;
 }
 
 bool	modeG::Render()
@@ -324,29 +328,12 @@ bool	modeG::Terminate()
 
 void modeG::cameraMove()
 {
-	if (isLockon)
-	{
-		auto EtoPdir = VSub(bossMI->pos, plMI->pos);
-		cameraFor = VAdd(bossMI->pos, VGet(0.f, 100.f, 0.f));
-		cameraPos = VAdd(VAdd(plMI->pos, VScale(VNorm(EtoPdir), -400.f)), VGet(0.f, 250.f, 0.f));
-		if (cameraPos.y < 0) { cameraPos.y = 0; }
-		cameraLockDir = (std::atan2(-EtoPdir.x, -EtoPdir.z) * 180.f) / DX_PI_F;
-		cameraDir = cameraLockDir;
-		charBox[Char_PL]->setCamDir(cameraLockDir);
-	}
-	else
-	{
-		float radian = cameraNtDir * DX_PI_F / 180.0f;
-		auto InsV = VScale(VGet(sin(radian) * 100.f, 100, cos(radian) * 100.f), 3.f);
-		auto _pos = cameraPos = VAdd(plMI->pos, InsV);
-		cameraFor = VSub(plMI->pos, VSub(InsV, VGet(0.f, 300.f, 0.f)));
-		if (cameraHigh < -260.f) { cameraHigh = -260.f; }
-		if (cameraHigh > 60.f) { cameraHigh = 60.f; }
-		cameraPos.y += cameraHigh;
-		cameraFor.y -= cameraHigh;
-		cameraDir = cameraNtDir;
-		charBox[Char_PL]->setCamDir(-1.f);
-	}
+	float radian = cameraDir * DX_PI_F / 180.0f;
+	VECTOR InsV = VGet(sin(radian) * 10, 0, cos(radian) * 10);
+	auto _pos = cameraPos = VAdd(plMI->pos, VGet(0, 0, 0));
+	cameraFor = VAdd(plMI->pos, InsV);
+	cameraFor.y += (cameraHigh * DX_PI_F / 180.0f) * 10;
+
 }
 
 float getNum(std::string data, int Num)

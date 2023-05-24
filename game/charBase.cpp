@@ -22,25 +22,25 @@ VECTOR CB::getDirVecP(float dir, int powar)
 
 bool	CB::gravity()
 {
-	if (_modelInf.pos.y < 1100)
-	{
-		_modelInf.pos.y = 1090;
-		isGround = true;
-		if (_modelInf.vec.y < 0) { _modelInf.vec.y = 0; }
-	}
-	else
-	{
-		_modelInf.vec.y -= g;
-		isGround = false;
-	}
-
-	//マップ(円)の中から出ないように
-	auto a = _modelInf.pos;
-	float c = sqrt(a.x * a.x + a.y * a.y + a.z * a.z);
-	if (c > 4600.f)
-	{
-		_modelInf.pos = VScale(VNorm(a), 4600.f);
-	}
+		if (_modelInf.pos.y < 1100)
+		{
+			_modelInf.pos.y = 1090;
+			isGround = true;
+			if (_modelInf.vec.y < 0) { _modelInf.vec.y = 0; }
+		}
+		else
+		{
+			_modelInf.vec.y -= g;
+			isGround = false;
+		}
+	//
+	//	//マップ(円)の中から出ないように
+	//	auto a = _modelInf.pos;
+	//	float c = sqrt(a.x * a.x + a.y * a.y + a.z * a.z);
+	//	if (c > 4600.f)
+	//	{
+	//		_modelInf.pos = VScale(VNorm(a), 4600.f);
+	//	}
 	return true;
 }
 

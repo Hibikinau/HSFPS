@@ -9,6 +9,7 @@
 #pragma once
 #include"appframe.h"
 #include"motionDefineList.h"
+#include"bullet.h"
 
  /**
 	* @brief ステータス情報をまとめた構造体
@@ -198,7 +199,7 @@ public:
 	 * @param iInf 操作入力情報セット用ポインタ
 	 * @param cameraDir カメラ位置情報セット用ポインタ
 	 */
-	void getInputKey(imputInf* iInf, float* cameraDir) { _imputInf = iInf, _cameraDir = cameraDir; };
+	void getInputKey(imputInf* iInf, float* cameraDirX, float* cameraDirY) { _imputInf = iInf, _cameraDirX = cameraDirX, _cameraDirY = cameraDirY; };
 
 	/**
 	 * @brief 当たり判定情報作成処理
@@ -230,7 +231,8 @@ public:
 		, isSetSoundValume;//!マスター音量適用をするか
 	float g//!重力値
 		, camDir//!ロックオンカメラ位置情報
-		, * _cameraDir//!カメラ位置情報
+		, * _cameraDirX
+		, * _cameraDirY//!カメラ位置情報
 		, animSpd;//!アニメーション
 	int isDead;//!キャラが志望常態か(0.生きてる 1.死亡モーション中 2.インスタンス解放)
 	int isImmortal = false//!無敵状態か
@@ -246,6 +248,7 @@ public:
 	collCapsule collCap;//!当たり判定用カプセルのインスタンス
 	std::vector<int> soundHandle;//!音声データ用コンテナ
 	std::vector<attackColl>* allColl;//!当たり判定カプセル用コンテナ用ポインタ
+	std::vector<std::unique_ptr<bullet> > bulletData;
 	imputInf* _imputInf;//!入力データ用ポインタ
 	Rserver* RS;//!リソースサーバークラス用ポインタ
 };

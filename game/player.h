@@ -17,31 +17,22 @@ enum class ExclusiveState
 {
 	NORMAL,//!初期状態
 	JUMP,//!ジャンプ
-	quickATTACK,//!弱攻撃
-	slowATTACK,//!強攻撃
-	changeATTACKX,//Xボタン側入れ替え技
-	changeATTACKY,//Yボタン側入れ替え技
+	rClick,//!固有
+	lClick,//!射撃
 	DODGE,//!回避
-	GUARD,//!ガード
-	DAMAGE,//!被弾時やられ
-	finishAttack,//!覚醒時フィニッシュ技
+	reload,//リロード
+	F,//!インタラクト
 };
 
 enum class pushButton
 {
 	Neutral,//!非入力
-	A,//!Aボタン
-	B,//!Bボタン
-	X,//!Xボタン
-	Y,//!Yボタン
-	R1,//!R1ボタン
-	LBX,//!L1 + Xボタン
-	LBY,//!L1 + Yボタン
-	LBA,//!L1 + Aボタン
-	Lstick,//!Lsrick入力
-	Irregular,//!例外
-	Damage,//!被弾時例外
-	finishAttack,//!覚醒時フィニッシュ技例外
+	rClick,//!右クリック
+	lClick,//!左クリック
+	lShift,//!左シフト
+	space,//!スペースキー
+	R,//!Rキー
+	F,//!Fキー
 };
 
 /**
@@ -85,7 +76,7 @@ public:
 	 * @param _Dir 移動方向
 	 * @param isAnimChange runアニメーションを再生するか
 	 */
-	void charMove(float Speed, float _Dir, bool isAnimChange);
+	void charMove(float Speed, float _DirX, bool isAnimChange);
 
 	/**
 	 * @brief 入力を基準にプレイヤの行動を返す処理
@@ -122,7 +113,7 @@ public:
 	 * @param checkUseCamDir ロックオンカメラ基準で返すかどうか
 	 * @return 移動方向
 	 */
-	float getMoveDir(bool checkUseCamDir);
+	float getMoveDir();
 
 	/**
 	 * @brief 体力計算処理
@@ -201,14 +192,14 @@ public:
 	 * @brief メインゲーム開始時ボイス処理
 	 */
 	void battleStartVoice() override { PlaySoundMem(soundHandle[voiceStartNum + 35 + rand() % 2], DX_PLAYTYPE_BACK); }
-	bool recastSet()
-	{
-		if (lastAttackState == ExclusiveState::changeATTACKX && caRecastX <= 0) { caRecastX = setRecastTime; }
-		else if (lastAttackState == ExclusiveState::changeATTACKY && caRecastY <= 0) { caRecastY = setRecastTime; }
-		else { return false; }
-		setRecastTime = 0;
-		return true;
-	};
+	//bool recastSet()
+	//{
+	//	if (lastAttackState == ExclusiveState::changeATTACKX && caRecastX <= 0) { caRecastX = setRecastTime; }
+	//	else if (lastAttackState == ExclusiveState::changeATTACKY && caRecastY <= 0) { caRecastY = setRecastTime; }
+	//	else { return false; }
+	//	setRecastTime = 0;
+	//	return true;
+	//};
 
 protected:
 	int attackNumOld//!弱/強攻撃が何段目か
