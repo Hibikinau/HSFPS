@@ -233,4 +233,5 @@ protected:
 		, oldEstate = ExclusiveState::NORMAL//!1つ前のキャラの行動状態インスタンス
 		, lastAttackState;//!キャラの最終攻撃インスタンス
 	pushButton nextKey;//!先行入力用インスタンス
+	modelInf gun;
 };

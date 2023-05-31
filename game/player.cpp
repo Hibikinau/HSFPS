@@ -45,7 +45,8 @@ bool PL::Initialize()
 	_modelInf.dir = VGet(0.0f, 180.0f * DX_PI_F / 180.0f, 0.0f);
 
 	//モデルの読み込み
-	modelImport("game/res/Player01/Player1.mv1", 1.5f, &_modelInf, RS);
+	modelImport("res/Player01/Player1.mv1", 1.5f, &_modelInf, RS);
+	modelImport("res/ウェブリーフォスベリー/ウェブリーフォスベリーオートマチックリボルバー.pmx", 2.f, &gun, RS);
 
 	//入れ替え技設定
 	CA_change(_valData->plChangeAttackX, "X");
@@ -111,11 +112,11 @@ bool	PL::Process()
 		float radian2 = *_cameraDirY * DX_PI_F / 180.0f;
 		auto bu = std::make_unique<bullet>();
 		bu->_modelInf.vec = VGet(sin(radian) * 200, radian2 * 80, cos(radian) * 200);
-		bu->_modelInf.pos = _modelInf.pos;
+		bu->_modelInf.pos = MV1GetFramePosition(gun.modelHandle, 4);
 		bulletData.emplace_back(std::move(bu));
 	}
 
-	//
+
 	charMove(40, *_cameraDirX, true);
 
 	for (int i = 0; i < bulletData.size(); i++) { bulletData[i]->Process(); }
@@ -123,12 +124,17 @@ bool	PL::Process()
 	_modelInf.pos = VAdd(_modelInf.pos, _modelInf.vec);
 	auto insVec = VScale(_modelInf.vec, 0.05);
 	_modelInf.vec = VSub(_modelInf.vec, VGet(insVec.x, 0, insVec.z));
+
+	gun.pos = VAdd(_modelInf.pos, VGet(100, -100, 0));
+	gun.dir.y = *_cameraDirX;
+
 	return true;
 }
 
 bool	PL::Render(float timeSpeed)
 {
 	isAnimEnd = modelRender(&_modelInf, animSpd, timeSpeed);
+	modelRender(&gun, animSpd, timeSpeed);
 	//DrawCapsule3D(collCap.underPos, collCap.overPos, collCap.r, 8, GetColor(255, 0, 255), GetColor(0, 0, 0), false);
 
 	for (int i = 0; i < bulletData.size(); i++) { bulletData[i]->Render(); }
