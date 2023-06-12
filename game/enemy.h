@@ -32,7 +32,7 @@ public:
 	 */
 	virtual bool	Render(float timeSpeed);
 	void setRS(Rserver* _RS) { RS = _RS; }
-	bool hitCheck(const char* name, VECTOR _pos, VECTOR _vec, float _damage, float r) override;
+	bool hitCheck(VECTOR _pos, VECTOR _vec, float _damage, float r) override;
 
 private:
 	float charSize;

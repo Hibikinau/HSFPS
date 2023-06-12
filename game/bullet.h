@@ -12,7 +12,9 @@ public:
 	bool Terminate();
 	void setRS(Rserver* _RS) { RS = _RS; }
 
+	int deadCount;
 	float damage, speed, bulletRadius;
+	std::string shooterName;
 	modelInf _modelInf;
 	Rserver* RS;
 };

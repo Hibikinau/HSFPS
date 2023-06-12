@@ -7,15 +7,18 @@ bool EN::Initialize()
 	_modelInf.pos = VGet(0, 0, 0);
 	charSize = 60.f;
 	charColor = GetColor(255, 0, 0);
+	_statusInf.hitPoint = 2;
 
-	_modelInf.pos = charBox->at(Char_PL)->_modelInf.pos;
+	_modelInf.pos = charBox->find(Char_PL)->second->_modelInf.pos;
+	return true;
 }
 
 bool EN::Process()
 {
 
+	return true;
 }
-//Segment_Point_MinLength
+
 bool EN::Render(float timeSpeed)
 {
 	DrawSphere3D(_modelInf.pos, charSize, 12, charColor, charColor, true);
@@ -24,10 +27,15 @@ bool EN::Render(float timeSpeed)
 	return true;
 }
 
-bool EN::hitCheck(const char* name, VECTOR _pos, VECTOR _vec, float _damage, float r)
+bool	EN::Terminate()
 {
-	if (name == this->name) { return false; }
+	CB::Terminate();
 
+	return true;
+}
+
+bool EN::hitCheck(VECTOR _pos, VECTOR _vec, float _damage, float r)
+{
 	float bulletDis = Segment_Point_MinLength(_pos, VAdd(_pos, _vec), _modelInf.pos);
 	if (bulletDis < (r + charSize))
 	{

@@ -14,15 +14,16 @@ bool makeChar(modeG* insMG, Rserver* _rs, std::shared_ptr<CB> charPoint, const c
 {
 	charPoint->_valData = insMG->_valData;
 	charPoint->setRS(&insMG->_modeServer->RS);
-	charPoint->Initialize();
 	charPoint->setCB(&insMG->charBox);
 	charPoint->setName(nameA);
+	charPoint->Initialize();
 	charPoint->setGroundInf(&insMG->stage);
 	charPoint->allColl = &insMG->mAllColl;
 	charPoint->getInputKey(&insMG->_imputInf, &insMG->cameraDir, &insMG->cameraHigh);
 	insMG->charBox.emplace(nameA, std::move(charPoint));
 	return true;
 }
+
 bool	modeG::popBoss(int bossType, const char* _nameA)
 {
 	//if (bossType == 1) { makeChar(this, &_modeServer->RS, std::shared_ptr<BossKnight>(), _nameA); }
@@ -50,7 +51,7 @@ bool	modeG::ASyncLoadAnim()
 
 bool	modeG::Initialize()
 {
-	SetUseLighting(true);
+	SetUseLighting(false);
 	SetUseZBuffer3D(true);// Ｚバッファを有効にする
 	SetWriteZBuffer3D(true);// Ｚバッファへの書き込みを有効にする
 	SetUseBackCulling(false);
@@ -99,7 +100,7 @@ bool	modeG::Initialize()
 bool	modeG::Process()
 {
 	plStatus = { 0.f };
-	for (auto i = charBox.begin(); i != charBox.end(); i++)
+	for (auto i = charBox.begin(); i != charBox.end(); ++i)
 	{
 		if (i->second->getType() == 1)
 		{
@@ -117,10 +118,16 @@ bool	modeG::Process()
 			bossMI = i->second->getInf();
 			i->second->gravity();
 			bossStatus = i->second->getStatus();
-			if (i->second->isDead == 2)
+
+			std::vector<std::unique_ptr<bullet> >* _bulletData = &charBox.find(Char_PL)->second->bulletData;
+			for (int j = 0; j < _bulletData->size(); j++)
 			{
-				i->second->Terminate();
-				charBox.erase(i);
+				if (i->second->hitCheck(_bulletData->at(j)->_modelInf.pos, _bulletData->at(j)->_modelInf.vec, _bulletData->at(j)->damage, _bulletData->at(j)->bulletRadius))
+				{
+					i->second->Terminate();
+					charBox.erase(i);
+					--i;
+				}
 			}
 		}
 
@@ -168,7 +175,7 @@ bool	modeG::Process()
 		+ "/z." + std::to_string(static_cast<int>(plMI->pos.z)));
 
 	//当たり判定計算呼び出し
-	collHitCheck();
+	//collHitCheck();
 
 	//メニュー画面呼び出し
 	if (_imputInf._gTrgb[KEY_INPUT_M] || _imputInf._gTrgp[XINPUT_BUTTON_START])
@@ -181,7 +188,13 @@ bool	modeG::Process()
 		_valData->hitstopF = 10;
 	}
 
-	if (_imputInf._gTrgb[KEY_INPUT_E]) { makeChar(this, &_modeServer->RS, std::make_unique<EN>(), "enemy"); }
+	if (_imputInf._gTrgb[KEY_INPUT_E])
+	{
+		std::string insName = "enemy";
+		insName += enemyNum;
+		enemyNum++;
+		makeChar(this, &_modeServer->RS, std::make_shared<EN>(), insName.c_str());
+	}
 	if (_imputInf._gTrgb[KEY_INPUT_A]) { swordGlitchAnimNum = 0; }
 	// Effekseerにより再生中のエフェクトを更新する。
 	UpdateEffekseer3D();
@@ -258,42 +271,42 @@ bool	modeG::Render()
 
 	return true;
 }
-
-bool	modeG::collHitCheck()
-{
-	for (int i = 0; i < mAllColl.size(); i++)
-	{//
-		if (mAllColl.at(i).nonActiveTimeF > 0) { mAllColl.at(i).nonActiveTimeF--; }
-		else if (mAllColl.at(i).activeTimeF > 0) { mAllColl.at(i).activeTimeF--; }
-		else
-		{
-			atkEfc.emplace_back(mAllColl.at(i).rightingEfc);
-			mAllColl.erase(mAllColl.begin() + i);
-		}
-	}
-
-	for (auto i = charBox.begin(); i != charBox.end(); i++)
-	{
-		VECTOR hitPos = { -1 }, hitDir = { -1 };
-		float _damage;
-		if (i->second->hitCheck(i->first.c_str(), &hitPos, &hitDir, &_damage))
-		{
-			popDamageInf insDamage;
-			insDamage.pos = hitPos;
-			insDamage.damage = _damage;
-			insDamage.isPl = i->first == Char_PL;
-			damageNumPopList.emplace_back(insDamage);
-
-			auto a = PlayEffekseer3DEffect(_valData->efcHandle);
-			SetPosPlayingEffekseer3DEffect(a, hitPos.x, hitPos.y, hitPos.z);
-			auto D = 45;
-			SetRotationPlayingEffekseer3DEffect(a, hitDir.x - D, hitDir.y - D, hitDir.z - D);
-			SetScalePlayingEffekseer3DEffect(a, 2, 2, 2);
-		}
-	}
-
-	return true;
-}
+//
+//bool	modeG::collHitCheck()
+//{
+//	for (int i = 0; i < mAllColl.size(); i++)
+//	{//
+//		if (mAllColl.at(i).nonActiveTimeF > 0) { mAllColl.at(i).nonActiveTimeF--; }
+//		else if (mAllColl.at(i).activeTimeF > 0) { mAllColl.at(i).activeTimeF--; }
+//		else
+//		{
+//			atkEfc.emplace_back(mAllColl.at(i).rightingEfc);
+//			mAllColl.erase(mAllColl.begin() + i);
+//		}
+//	}
+//
+//	for (auto i = charBox.begin(); i != charBox.end(); i++)
+//	{
+//		VECTOR hitPos = { -1 }, hitDir = { -1 };
+//		float _damage;
+//		if (i->second->hitCheck(i->first.c_str(), &hitPos, &hitDir, &_damage))
+//		{
+//			popDamageInf insDamage;
+//			insDamage.pos = hitPos;
+//			insDamage.damage = _damage;
+//			insDamage.isPl = i->first == Char_PL;
+//			damageNumPopList.emplace_back(insDamage);
+//
+//			auto a = PlayEffekseer3DEffect(_valData->efcHandle);
+//			SetPosPlayingEffekseer3DEffect(a, hitPos.x, hitPos.y, hitPos.z);
+//			auto D = 45;
+//			SetRotationPlayingEffekseer3DEffect(a, hitDir.x - D, hitDir.y - D, hitDir.z - D);
+//			SetScalePlayingEffekseer3DEffect(a, 2, 2, 2);
+//		}
+//	}
+//
+//	return true;
+//}
 
 bool	modeG::Terminate()
 {

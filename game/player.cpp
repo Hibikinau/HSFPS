@@ -111,15 +111,24 @@ bool	PL::Process()
 		float radian = *_cameraDirX * DX_PI_F / 180.0f;
 		float radian2 = *_cameraDirY * DX_PI_F / 180.0f;
 		auto bu = std::make_unique<bullet>();
+		bu->Initialize();
 		bu->_modelInf.vec = VGet(sin(radian) * 200, radian2 * 80, cos(radian) * 200);
-		bu->_modelInf.pos = MV1GetFramePosition(gun.modelHandle, 4);
+		bu->_modelInf.pos = _modelInf.pos;//MV1GetFramePosition(gun.modelHandle, 4);
 		bulletData.emplace_back(std::move(bu));
 	}
 
 
 	charMove(40, *_cameraDirX, true);
 
-	for (int i = 0; i < bulletData.size(); i++) { bulletData[i]->Process(); }
+	for (auto ite = bulletData.begin(); ite != bulletData.end();)
+	{
+		if (!ite->get()->Process())
+		{
+			ite->get()->Terminate();
+			ite = bulletData.erase(ite);
+		}
+		else { ++ite; }
+	}
 
 	_modelInf.pos = VAdd(_modelInf.pos, _modelInf.vec);
 	auto insVec = VScale(_modelInf.vec, 0.05);

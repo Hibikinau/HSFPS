@@ -160,7 +160,7 @@ public:
 	 */
 	virtual void battleStartVoice() { return; }
 
-	virtual bool hitCheck(const char* name, VECTOR _pos, VECTOR _vec, float _damage, float r) { return false; }
+	virtual bool hitCheck(VECTOR _pos, VECTOR _vec, float _damage, float r) { return false; }
 	/**
 	 * @brief 名前情報セット処理
 	 * @param 名前

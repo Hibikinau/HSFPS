@@ -33,7 +33,7 @@ public:
 	void cameraMove();
 	int useCommand();
 	bool ASyncLoadAnim();
-	bool collHitCheck();
+	//bool collHitCheck();
 	bool drawUI();
 	bool	popBoss(int bossType, const char* _nameA)override;
 
@@ -75,4 +75,5 @@ public:
 	bool debugMode = true, plDead;
 	int BGMdelay;
 	int drawAreaSize = 0;
+	int enemyNum = 0;
 };
