@@ -126,7 +126,6 @@ bool	modeG::Process()
 				{
 					i->second->Terminate();
 					charBox.erase(i);
-					--i;
 				}
 			}
 		}
