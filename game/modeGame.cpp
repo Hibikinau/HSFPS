@@ -117,28 +117,13 @@ bool	modeG::Process()
 			bossMI = i->second->getInf();
 			i->second->gravity();
 			bossStatus = i->second->getStatus();
-			if (bossStatus.hitPoint <= 0 && !endVoice) {
-				endVoice = true;
-				isLockon = false;
+			if (i->second->isDead == 2)
+			{
+				i->second->Terminate();
+				charBox.erase(i);
 			}
 		}
 
-		if (i->second->isDead == 2 || i->second->_modelInf.pos.y < -500)
-		{
-			if (i->second->type == 1 && !isGameOver)
-			{//自機の死
-				//_modeServer->Add(std::make_unique<modeGO>(_modeServer), 1, MODE_GO);
-				//StopSoundMem(BGM);
-				isGameOver = true;
-			}
-			else
-			{//それ以外の死
-				//_modeServer->Add(std::make_unique<modeR>(_modeServer), 1, MODE_RESULT);
-				_valData->points += 20000;
-			}
-
-			return false;
-		}
 	}
 
 
@@ -196,6 +181,7 @@ bool	modeG::Process()
 		_valData->hitstopF = 10;
 	}
 
+	if (_imputInf._gTrgb[KEY_INPUT_E]) { makeChar(this, &_modeServer->RS, std::make_unique<EN>(), "enemy"); }
 	if (_imputInf._gTrgb[KEY_INPUT_A]) { swordGlitchAnimNum = 0; }
 	// Effekseerにより再生中のエフェクトを更新する。
 	UpdateEffekseer3D();

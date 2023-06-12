@@ -157,6 +157,7 @@
   <ItemGroup>
     <ClCompile Include="bullet.cpp" />
     <ClCompile Include="charBase.cpp" />
+    <ClCompile Include="enemy.cpp" />
     <ClCompile Include="gameMain.cpp" />
     <ClCompile Include="modeGame.cpp" />
     <ClCompile Include="modeTitle.cpp" />
@@ -166,6 +167,7 @@
     <ClInclude Include="allMode.h" />
     <ClInclude Include="bullet.h" />
     <ClInclude Include="charBase.h" />
+    <ClInclude Include="enemy.h" />
     <ClInclude Include="gameMain.h" />
     <ClInclude Include="modeGame.h" />
     <ClInclude Include="modeTitle.h" />

@@ -11,8 +11,8 @@ public:
 	bool Render();
 	bool Terminate();
 	void setRS(Rserver* _RS) { RS = _RS; }
-	
-	float damage, speed;
+
+	float damage, speed, bulletRadius;
 	modelInf _modelInf;
 	Rserver* RS;
 };

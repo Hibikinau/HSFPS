@@ -8,6 +8,7 @@
 #pragma once
 #include"appframe.h"
 #include"player.h"
+#include"enemy.h"
 #include<memory>
 
 struct popDamageInf

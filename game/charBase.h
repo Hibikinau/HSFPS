@@ -160,6 +160,7 @@ public:
 	 */
 	virtual void battleStartVoice() { return; }
 
+	virtual bool hitCheck(const char* name, VECTOR _pos, VECTOR _vec, float _damage, float r) { return false; }
 	/**
 	 * @brief 名前情報セット処理
 	 * @param 名前
@@ -174,7 +175,6 @@ public:
 	 * @param damage ダメージ取得用ポインタ
 	 * @return true
 	 */
-	bool hitCheck(const char* name, VECTOR* hitPos, VECTOR* hitDir, float* damage);
 
 	/**
 	 * @brief キャラモデル情報取得
