@@ -143,7 +143,7 @@ bool	modeG::Process()
 	if (charBox.size() <= 1) { score += 10; }
 
 	//コマンド呼び出し部分
-	useCommand();
+	//useCommand();
 
 	//カメラ制御---------------------------------------------
 	int XBuf, YBuf;
