@@ -12,23 +12,13 @@
 bool modeT::save(const char* dir, valData* _val)
 {
 	std::vector<std::string> _data;
-	int points = _val->points;
 	fileIO::loadCSV(&_data, dir, false);
 
 	for (int i = 0; i < _data.size(); i++)
 	{
-		if (_data[i].find("//") != std::string::npos)
-		{
-			continue;
-		}
+		if (_data[i].find("//") != std::string::npos) { continue; }
 
-		if (_data[i] == "入れ替え技X") { i++; _data[i] = _val->plChangeAttackX; }
-		if (_data[i] == "入れ替え技Y") { i++; _data[i] = _val->plChangeAttackY; }
-		if (_data[i] == "所持ポイント") { i++; _data[i] = std::to_string(points); }
-		if (_data[i] == "撃破済みBoss") {
-			i++;  while (_data[i] != "ここまで") { _data.erase(_data.begin() + i); }
-			for (auto boss : _val->deadBoss) { _data.emplace(_data.begin() + i, boss), i++; };
-		}
+		if (_data[i] == "最大スコア") { i++; _data[i] = std::to_string(_val->maxScore); }
 	}
 	std::string insStr = "";
 	for (auto insData : _data) { insStr += insData + "\n"; }
@@ -49,6 +39,11 @@ bool modeT::loadData(const char* dir, valData* _val)
 		if (_data[i].find("//") != std::string::npos)
 		{
 			continue;
+		}
+		if (_data[i] == "最大スコア")
+		{
+			i++;
+			_val->maxScore = std::atoi(_data[i].c_str());
 		}
 
 		//例
@@ -75,13 +70,14 @@ bool modeT::loadData(const char* dir, valData* _val)
 bool	modeT::Initialize()
 {
 	_cg = _modeServer->RS.loadGraphR("res/title.png");
+	modeT::loadData("data.csv", &_modeServer->_valData);
 
 	return true;
 }
 
 bool	modeT::Process()
 {
-	if ((_imputInf._gTrgb[KEY_INPUT_RETURN] || _imputInf._gTrgp[XINPUT_BUTTON_A]))
+	if ((_imputInf._gTrgb[KEY_INPUT_RETURN]))
 	{
 		_modeServer->Add(std::make_unique<modeG>(_modeServer), 1, MODE_GAME);
 		return false;

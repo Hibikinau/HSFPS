@@ -23,7 +23,7 @@ bool ApplicationBase::Initialize(HINSTANCE hInstance, ModeServer* ms) {
 	if (AppWindowed()) {
 		ChangeWindowMode(true);							// ウィンドウモードに指定する
 	}
-	SetMainWindowText("CyberDevilHunter-Dracula");
+	SetMainWindowText("scoreAttackFPS");
 	SetGraphMode(DispSizeW(), DispSizeH(), 32);
 
 	// DirectX11を使用するようにする。(DirectX9も可、一部機能不可)
@@ -116,25 +116,19 @@ bool ApplicationBase::Input() {
 }
 
 bool ApplicationBase::Process() {
-	if (_serverMode->_valData.hitstopF > 0) { _serverMode->_valData.hitstopF--; }
-	else
-	{
-		_serverMode->ProcessInit();
-		_serverMode->Process();
-		_serverMode->ProcessFinish();
-	}
+	_serverMode->ProcessInit();
+	_serverMode->Process();
+	_serverMode->ProcessFinish();
+
 	return true;
 }
 
 bool ApplicationBase::Render() {
-	if (_serverMode->_valData.hitstopF > 0);
-	else
-	{
-		ClearDrawScreen();		// 画面を初期化する
-		_serverMode->RenderInit();
-		_serverMode->Render();
-		_serverMode->RenderFinish();
-		ScreenFlip();			// 裏画面の内容を表画面に反映させる
-	}
+	ClearDrawScreen();		// 画面を初期化する
+	_serverMode->RenderInit();
+	_serverMode->Render();
+	_serverMode->RenderFinish();
+	ScreenFlip();			// 裏画面の内容を表画面に反映させる
+
 	return true;
 }

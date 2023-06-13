@@ -17,7 +17,7 @@ bool EN::Initialize()
 	}
 	_modelInf.pos.y = 400.f;
 	charSize = 300.f;
-	charColor = GetColor(255, 0, 0);
+	charColor = GetColor(50, 0, 0);
 	_statusInf.hitPoint = 2;
 
 	return true;

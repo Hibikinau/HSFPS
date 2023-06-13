@@ -216,12 +216,6 @@ public:
 	 */
 	bool makeAttackCap(VECTOR _underPos, VECTOR _overPos, float r, int nonActiveTimeF, int activeTimeF, int timeSpeed, bool isUseMat, float damage, float stan, int frameNum, VECTOR _dir, int _efcNum);
 
-	/**
-	 * @brief マスター音量セット処理
-	 * @param masterValume マスター音量
-	 */
-	void setMasterVolume(int masterValume) { for (int handle : soundHandle) { ChangeVolumeSoundMem(255 * (0.01 * _valData->soundMasterValume), handle); } }
-
 	static VECTOR getDirVecP(float dir, int powar);
 
 	int type = 0//!キャラクタタイプ(player = 1, boss = 2)

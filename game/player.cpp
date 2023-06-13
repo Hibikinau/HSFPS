@@ -47,24 +47,6 @@ bool PL::Initialize()
 	modelImport("res/Player01/Player1.mv1", 1.5f, &_modelInf, RS);
 	modelImport("res/ウェブリーフォスベリー/ウェブリーフォスベリーオートマチックリボルバー.pmx", 2.f, &gun, RS);
 
-	//入れ替え技設定
-	CA_change(_valData->plChangeAttackX, "X");
-	CA_change(_valData->plChangeAttackY, "Y");
-
-	//音声データの読み込み
-	for (std::string seNameList : _valData->playerSeList)
-	{
-		std::string insName = "game/res/SE/player/" + seNameList;
-		soundHandle.emplace_back(LoadSoundMem(insName.c_str()));
-	}
-	for (std::string voiceNameList : _valData->playerVoiceList)
-	{
-		std::string insName = "game/res/voice/player/" + voiceNameList;
-		soundHandle.emplace_back(LoadSoundMem(insName.c_str()));
-	}
-
-	//guardEfcHandle = LoadEffekseerEffect("game/res/effect/ガード/guard_effect_01.efkefc", 20.f);
-
 	return true;
 }
 
@@ -79,7 +61,7 @@ bool	PL::Terminate()
 
 bool	PL::Process()
 {
-	if (_imputInf->_gTrgb[KEY_INPUT_SPACE] && airDashCoolTime <= 0) { _modelInf.vec.y = 210, airDashCoolTime = 60; }
+	if (_imputInf->_gTrgb[KEY_INPUT_SPACE] && airDashCoolTime <= 0) { _modelInf.vec.y = 210, airDashCoolTime = 70; }
 	isGround ? airDashCoolTime = 0 : airDashCoolTime--;
 
 	if (_imputInf->_gTrgb[KEY_INPUT_LSHIFT])
@@ -133,8 +115,8 @@ bool	PL::Process()
 	auto insVec = VScale(_modelInf.vec, 0.05);
 	_modelInf.vec = VSub(_modelInf.vec, VGet(insVec.x, 0, insVec.z));
 
-	gun.pos = VAdd(_modelInf.pos, VGet(0, 0, 0));
-	gun.dir.y = *_cameraDirX;
+	//gun.pos = VAdd(_modelInf.pos, VGet(0, 0, 0));
+	//gun.dir.y = *_cameraDirX;
 
 	return true;
 }
@@ -142,7 +124,7 @@ bool	PL::Process()
 bool	PL::Render(float timeSpeed)
 {
 	isAnimEnd = modelRender(&_modelInf, animSpd, timeSpeed);
-	modelRender(&gun, animSpd, timeSpeed);
+	//modelRender(&gun, animSpd, timeSpeed);
 
 	for (int i = 0; i < bulletData.size(); i++) { bulletData[i]->Render(); }
 

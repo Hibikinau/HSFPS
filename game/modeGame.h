@@ -33,13 +33,12 @@ public:
 	void cameraMove();
 	int useCommand();
 	bool ASyncLoadAnim();
-	//bool collHitCheck();
 	bool drawUI();
 	bool	popBoss(int bossType, const char* _nameA)override;
 
 public:
 	ModeServer* _modeServer;
-	int _x, _y, enemyPopCoolTime, score;
+	int _x, _y, enemyPopCoolTime, score, defFontSize;
 	int reticleHandle = -1;
 	float spd, cameraDir, cameraLockDir, cameraNtDir, cameraHigh;
 	int startTime, countTime, FPS, FPScount;
@@ -51,22 +50,13 @@ public:
 	std::vector<std::string> debugWardBox;
 	imputInf _imputInf;
 	valData* _valData;
-	statusInf plStatus, bossStatus;
+	statusInf plStatus;
 	std::vector<weaponEffect> atkEfc;
 	std::vector<popDamageInf> damageNumPopList;
 	int UIkari, BGM, insEfcHandle, efcHandle, efcTime;
-	int keepout[180] = { -1 }, keepoutNum;
-	int lockOnMarkerHandle[30] = { -1 }, LOMarkerNum = 0;
-	int gameStartAnimHandle[89] = { -1 }, GSAnimNum;
-	int slashLineAnimHandle[39] = { -1 };
 
-	int StageModelHandle;
-	int CharaModelHandle;
-	int ShadowMapHandle;
 	float bright = .6f;
 	float Atten0 = 0.8f, Atten1 = 0.f, Atten2 = 0.f;
 	bool debugMode = true, plDead;
-	int BGMdelay;
-	int drawAreaSize = 0;
 	int enemyNum = 0;
 };

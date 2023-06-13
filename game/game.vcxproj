@@ -160,6 +160,7 @@
     <ClCompile Include="enemy.cpp" />
     <ClCompile Include="gameMain.cpp" />
     <ClCompile Include="modeGame.cpp" />
+    <ClCompile Include="modeResult.cpp" />
     <ClCompile Include="modeTitle.cpp" />
     <ClCompile Include="player.cpp" />
   </ItemGroup>
@@ -170,9 +171,13 @@
     <ClInclude Include="enemy.h" />
     <ClInclude Include="gameMain.h" />
     <ClInclude Include="modeGame.h" />
+    <ClInclude Include="modeResult.h" />
     <ClInclude Include="modeTitle.h" />
     <ClInclude Include="motionDefineList.h" />
     <ClInclude Include="player.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="data.csv" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

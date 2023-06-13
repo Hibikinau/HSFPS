@@ -48,6 +48,9 @@
     <ClCompile Include="enemy.cpp">
       <Filter>ソース ファイル\char</Filter>
     </ClCompile>
+    <ClCompile Include="modeResult.cpp">
+      <Filter>ソース ファイル\mode</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="gameMain.h">
@@ -77,5 +80,13 @@
     <ClInclude Include="enemy.h">
       <Filter>ヘッダー ファイル\char</Filter>
     </ClInclude>
+    <ClInclude Include="modeResult.h">
+      <Filter>ヘッダー ファイル\mode</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="data.csv">
+      <Filter>リソース ファイル</Filter>
+    </None>
   </ItemGroup>
 </Project>

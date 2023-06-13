@@ -66,20 +66,12 @@ bool	modeG::Initialize()
 	reticleHandle = _modeServer->RS.loadGraphR("res/reticle.png");
 	countTime = GetNowCount();
 
-
 	//ここまで非同期ロード-------------------------------------------------------------------
 	ASyncLoadAnim();
 
-	// シャドウマップハンドルの作成
-	ShadowMapHandle = MakeShadowMap(16384, 16384);
-	// シャドウマップが想定するライトの方向もセット
+	//ライトの方向
 	VECTOR lightDir = VGet(-3.0f, -4.0f, 0.0f);
-	SetShadowMapLightDirection(ShadowMapHandle, lightDir);
 	ChangeLightTypeDir(lightDir);
-	// シャドウマップに描画する範囲を設定
-	SetShadowMapDrawArea(ShadowMapHandle, VGet(-5000.0f, -1.0f, -5000.0f), VGet(5000.0f, 1000.0f, 5000.0f));
-
-	//ChangeVolumeSoundMem(255 * (0.01 * _valData->soundMasterValume), BGM);
 
 	//読み込んだ3dモデルのサイズ調整
 	for (auto i = charBox.begin(); i != charBox.end(); i++)
@@ -90,6 +82,8 @@ bool	modeG::Initialize()
 	stage.pos = VGet(0, 0, 0);
 	changeScale(&skyDoom);
 	changeScale(&sakuHandle);
+	defFontSize = GetFontSize();
+	SetFontSize(50);
 
 	score = 0.f;
 	isLockon = true;
@@ -99,6 +93,19 @@ bool	modeG::Initialize()
 
 bool	modeG::Process()
 {
+	int nowTime = GetNowCount();//180000
+	if (countTime + 60000 <= nowTime)
+	{
+		_valData->score = score;
+		if (_valData->maxScore < score) { _valData->maxScore = score; }
+		_modeServer->Add(std::make_unique<modeR>(_modeServer), 1, MODE_RESULT);
+
+		return false;
+	}
+	else { FPScount++; }
+	debugWardBox.emplace_back("残り時間 : " + std::to_string(countTime + 60000 - nowTime));
+	debugWardBox.emplace_back("現在のスコア : " + std::to_string(score));
+
 	plStatus = { 0.f };
 	std::vector<std::string> deadEnemyList;
 	for (auto i = charBox.begin(); i != charBox.end(); ++i)
@@ -114,8 +121,6 @@ bool	modeG::Process()
 		{
 			i->second->Process();
 			bossMI = i->second->getInf();
-			//i->second->gravity();
-			bossStatus = i->second->getStatus();
 
 			std::vector<std::unique_ptr<bullet> >* _bulletData = &charBox.find(Char_PL)->second->bulletData;
 			auto dataSize = _bulletData->size();
@@ -153,21 +158,6 @@ bool	modeG::Process()
 	Effekseer_Sync3DSetting();
 
 	SetGlobalAmbientLight(GetColorF(bright, bright, bright, 0.0f));
-	debugWardBox.emplace_back("x." + std::to_string(static_cast<int>(plMI->pos.x))
-		+ "/y." + std::to_string(static_cast<int>(plMI->pos.y))
-		+ "/z." + std::to_string(static_cast<int>(plMI->pos.z)));
-	debugWardBox.emplace_back(std::to_string(score));
-
-	//メニュー画面呼び出し
-	if (_imputInf._gTrgb[KEY_INPUT_M] || _imputInf._gTrgp[XINPUT_BUTTON_START])
-	{
-		//_modeServer->Add(std::make_unique<modeM>(_modeServer), 1, MODE_MENU);
-	}
-
-	if (_imputInf._gTrgb[KEY_INPUT_H])
-	{
-		_valData->hitstopF = 10;
-	}
 
 	if (enemyPopCoolTime <= 0)
 	{
@@ -200,18 +190,9 @@ bool	modeG::Render()
 		i->second->Render(1);
 	}
 
-	int nowTime = GetNowCount();
-	if (countTime + 1000 <= nowTime) { FPS = FPScount, FPScount = 0, countTime += 1000; }
-	else { FPScount++; }
-
 	DrawEffekseer3D();// Effekseerにより再生中のエフェクトを描画する。
 
 	SetUseZBuffer3D(FALSE);
-	if (isLockon)
-	{
-		LOMarkerNum < 29 ? LOMarkerNum++ : LOMarkerNum = 0;
-		auto a = DrawBillboard3D(VAdd(cameraFor, VGet(0, 170, 0)), .5, .5, 100, 0, lockOnMarkerHandle[LOMarkerNum], true);
-	}
 
 	drawUI();
 	SetUseZBuffer3D(TRUE);
@@ -220,8 +201,8 @@ bool	modeG::Render()
 	{
 		int sizeX, sizeY, lineCount;
 		GetDrawStringSize(&sizeX, &sizeY, &lineCount, debugWardBox[i].c_str(), debugWardBox[i].length());
-		DrawBox(10, 10 + 20 * i, 10 + sizeX, 10 + 20 * i + sizeY, GetColor(0, 0, 0), true);
-		DrawString(10, 10 + 20 * i, debugWardBox[i].c_str(), GetColor(255, 255, 255));
+		DrawBox(10, 10 + 50 * i, 10 + sizeX, 10 + 50 * i + sizeY, GetColor(0, 0, 0), true);
+		DrawString(10, 10 + 50 * i, debugWardBox[i].c_str(), GetColor(255, 255, 255));
 	}
 	debugWardBox.clear();
 
@@ -243,7 +224,9 @@ bool	modeG::Terminate()
 	charBox.clear();
 	debugWardBox.clear();
 	DeleteLightHandleAll();
-	modeT::save("game/res/save.csv", _valData);
+	SetFontSize(defFontSize);
+
+	modeT::save("data.csv", _valData);
 	return true;
 }
 
@@ -302,24 +285,6 @@ int modeG::useCommand()
 			std::getline(a, data, '/');
 
 			if (data == "debug") { debugMode ? debugMode = false : debugMode = true;	return 2; }
-			//if (data == "menu") { _modeServer->Add(std::make_unique<modeM>(_modeServer), 1, MODE_MENU); }
-			if (data.find("atkF1") != std::string::npos) { _valData->plAtkSpd1 = getNum(data, 1); }
-			if (data.find("atkF2") != std::string::npos) { _valData->plAtkSpd2 = getNum(data, 1); }
-			if (data.find("atkF3") != std::string::npos) { _valData->plAtkSpd3 = getNum(data, 1); }
-			if (data.find("atkF4") != std::string::npos) { _valData->plAtkSpd4 = getNum(data, 1); }
-			if (data.find("GSpd") != std::string::npos) { _valData->counterSpd = getNum(data, 1); }
-			if (data.find("CTime") != std::string::npos) { _valData->_counterTime = getNum(data, 1); }
-			if (data.find("atkFall") != std::string::npos)
-			{
-				auto a = getNum(data, 1);
-				_valData->plAtkSpd1 = a, _valData->plAtkSpd2 = a, _valData->plAtkSpd3 = a, _valData->plAtkSpd4 = a;
-			}
-			if (data.find("effectChange") != std::string::npos)
-			{
-				auto comEfcDir = "game/res/" + getChar(data, 1) + ".efkefc";
-				auto efcScale = getNum(data, 2);
-				_valData->efcHandle = LoadEffekseerEffect(comEfcDir.c_str(), efcScale);
-			}
 			if (data == "kill")
 			{
 				charBox[Char_PL]->_statusInf.hitPoint = 0;
@@ -336,7 +301,7 @@ int modeG::useCommand()
 			}
 			if (data == "csv")
 			{
-				modeT::loadData("game/res/save.csv", &_modeServer->_valData);
+				modeT::loadData("data.csv", &_modeServer->_valData);
 			}
 			if (data == "test")
 			{
