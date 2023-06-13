@@ -34,8 +34,7 @@ bool PL::Initialize()
 	//Še•Ï”‚Ì‰Šú‰»
 	spd = runSpd;
 	type = 1;
-	g = 3.f;
-	isCharge = 0;
+	g = 6.f;
 	Estate = _estate::NORMAL;
 	_statusInf.maxHitPoint = _statusInf.hitPoint = 200;
 	_statusInf.maxBloodPoint = 1500;
@@ -58,7 +57,6 @@ bool PL::Initialize()
 		std::string insName = "game/res/SE/player/" + seNameList;
 		soundHandle.emplace_back(LoadSoundMem(insName.c_str()));
 	}
-	voiceStartNum = soundHandle.size();
 	for (std::string voiceNameList : _valData->playerVoiceList)
 	{
 		std::string insName = "game/res/voice/player/" + voiceNameList;
@@ -80,45 +78,20 @@ bool	PL::Terminate()
 }
 
 bool	PL::Process()
-{/*
-	switch (setAction())
-	{
-	case pushButton::rClick:
-		break;
-	case pushButton::lClick:
-		break;
-	case pushButton::lShift:
-		break;
-	case pushButton::space:
-		break;
-	case pushButton::R:
-		break;
-	case pushButton::F:
-		break;
-	}*/
+{
+	if (_imputInf->_gTrgb[KEY_INPUT_SPACE] && airDashCoolTime <= 0) { _modelInf.vec.y = 210, airDashCoolTime = 60; }
+	isGround ? airDashCoolTime = 0 : airDashCoolTime--;
 
-	if (_imputInf->_gTrgb[KEY_INPUT_SPACE]) { _modelInf.vec.y += 60; }
 	if (_imputInf->_gTrgb[KEY_INPUT_LSHIFT])
 	{
-		float radian = *_cameraDirX * DX_PI_F / 180.0f;
+		/*float radian = *_cameraDirX * DX_PI_F / 180.0f;
 		_modelInf.vec.x += sin(radian) * 200;
 		_modelInf.vec.z += cos(radian) * 200;
 		radian = *_cameraDirY * DX_PI_F / 180.0f;
-		_modelInf.vec.y += radian * 80;
-	}
-	if ((GetMouseInput() & MOUSE_INPUT_LEFT) != 0)
-	{
-		float radian = *_cameraDirX * DX_PI_F / 180.0f;
-		float radian2 = *_cameraDirY * DX_PI_F / 180.0f;
-		auto bu = std::make_unique<bullet>();
-		bu->Initialize();
-		bu->_modelInf.vec = VGet(sin(radian) * 200, radian2 * 80, cos(radian) * 200);
-		bu->_modelInf.pos = _modelInf.pos;//MV1GetFramePosition(gun.modelHandle, 4);
-		bulletData.emplace_back(std::move(bu));
-	}
+		_modelInf.vec.y += radian * 80;*/
 
-
-	charMove(40, *_cameraDirX, true);
+		charMove(300, *_cameraDirX, true);
+	}
 
 	for (auto ite = bulletData.begin(); ite != bulletData.end();)
 	{
@@ -128,13 +101,39 @@ bool	PL::Process()
 			ite = bulletData.erase(ite);
 		}
 		else { ++ite; }
-	}
+	}//lClickTrgCheck
+
+	charMove(10, *_cameraDirX, true);
 
 	_modelInf.pos = VAdd(_modelInf.pos, _modelInf.vec);
+	if ((GetMouseInput() & MOUSE_INPUT_LEFT) != 0)
+	{
+		if (!lClickTrgCheck)
+		{
+			float radian = *_cameraDirX * DX_PI_F / 180.0f
+				, radian2 = *_cameraDirY * ((DX_PI_F / 180.0f) * 2.f);
+			int randRange = 120;
+
+			VECTOR buVec = VScale(VGet(sin(radian), radian2, cos(radian)), 800)
+				, buPos = VAdd(_modelInf.pos, _modelInf.vec);
+
+			for (int i = 0; i < 40; i++)
+			{
+				auto bu = std::make_unique<bullet>();
+				bu->Initialize();
+				bu->_modelInf.vec = VAdd(buVec, VGet(rand() % randRange - (randRange / 2), rand() % randRange - (randRange / 2), rand() % randRange - (randRange / 2)));
+				bu->_modelInf.pos = buPos;
+				bulletData.emplace_back(std::move(bu));
+			}
+			lClickTrgCheck = true;
+		}
+	}
+	else { lClickTrgCheck = false; }
+
 	auto insVec = VScale(_modelInf.vec, 0.05);
 	_modelInf.vec = VSub(_modelInf.vec, VGet(insVec.x, 0, insVec.z));
 
-	gun.pos = VAdd(_modelInf.pos, VGet(100, -100, 0));
+	gun.pos = VAdd(_modelInf.pos, VGet(0, 0, 0));
 	gun.dir.y = *_cameraDirX;
 
 	return true;
@@ -144,7 +143,6 @@ bool	PL::Render(float timeSpeed)
 {
 	isAnimEnd = modelRender(&_modelInf, animSpd, timeSpeed);
 	modelRender(&gun, animSpd, timeSpeed);
-	//DrawCapsule3D(collCap.underPos, collCap.overPos, collCap.r, 8, GetColor(255, 0, 255), GetColor(0, 0, 0), false);
 
 	for (int i = 0; i < bulletData.size(); i++) { bulletData[i]->Render(); }
 
@@ -175,59 +173,15 @@ void PL::charMove(float Speed, float _DirX, bool isAnimChange)
 	if (!inputCheck) { return; }
 
 	float radian = _DirX * DX_PI_F / 180.0f;
-	_modelInf.pos.x += sin(radian) * Speed;
-	_modelInf.pos.z += cos(radian) * Speed;
+	_modelInf.vec.x += sin(radian) * Speed;
+	_modelInf.vec.z += cos(radian) * Speed;
 
 	return;
 }
 
-bool PL::HPmath(float math, float Stan)
-{
-	isBlow = false;
-	if (math < 0)
-	{
-		if (counterTime > 0) { isCounter = 1; }
-		else if (immortalTime <= 0)
-		{
-			if (!isGuard || isFastGuard)
-			{
-				if (isAwakening == 0)
-				{
-					//if (!deadVoice) { PlaySoundMem(soundHandle[voiceStartNum + 27 + rand() % 4], DX_PLAYTYPE_BACK); }
-					_statusInf.hitPoint += math; BPmath(std::abs(math) * 6);
-				}
-				PlaySoundMem(soundHandle[11], DX_PLAYTYPE_BACK);
-				//Estate = _estate::DAMAGE;
-				if (math < -50 || waitBlowTime > 0) { isBlow = true; }
-				else { waitBlowTime = 100; }
-			}
+bool PL::HPmath(float math, float Stan) { return false; }
 
-			auto ACDisV = VSub(_modelInf.pos, charBox->find(attackChar)->second->_modelInf.pos);
-			ACDisV = VNorm(ACDisV);
-			_modelInf.vec = VScale(ACDisV, 50);
-		}
-	}
-	else
-	{
-		_statusInf.hitPoint += math;
-		if (_statusInf.hitPoint > _statusInf.maxHitPoint) { _statusInf.hitPoint = _statusInf.maxHitPoint; }
-	}
-	//if (dodgeTime > 0) { PlaySoundMem(soundHandle[voiceStartNum + 24 + rand() % 3], DX_PLAYTYPE_BACK); }
-
-	return isBlow;
-}
-bool PL::BPmath(float math)
-{
-	if (isAwakening > 0 && math > 0)
-	{
-		return false;
-	}
-	_statusInf.bloodPoint += math;
-	if (_statusInf.bloodPoint > _statusInf.maxBloodPoint) { _statusInf.bloodPoint = _statusInf.maxBloodPoint; }
-	if (_statusInf.bloodPoint < 0) { _statusInf.bloodPoint = 0; }
-
-	return true;
-}
+bool PL::BPmath(float math) { return false; }
 
 pushButton PL::setAction()
 {

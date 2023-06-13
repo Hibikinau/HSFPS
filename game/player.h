@@ -183,34 +183,8 @@ public:
 	 */
 	float getAnimPlayTotalTime() { return _modelInf.totalTime; };
 
-	/**
-	 * @brief メインゲーム終了時ボイス処理
-	 */
-	void battleEndVoice() override { PlaySoundMem(soundHandle[voiceStartNum + 41 + rand() % 2], DX_PLAYTYPE_BACK); }
-
-	/**
-	 * @brief メインゲーム開始時ボイス処理
-	 */
-	void battleStartVoice() override { PlaySoundMem(soundHandle[voiceStartNum + 35 + rand() % 2], DX_PLAYTYPE_BACK); }
-	//bool recastSet()
-	//{
-	//	if (lastAttackState == ExclusiveState::changeATTACKX && caRecastX <= 0) { caRecastX = setRecastTime; }
-	//	else if (lastAttackState == ExclusiveState::changeATTACKY && caRecastY <= 0) { caRecastY = setRecastTime; }
-	//	else { return false; }
-	//	setRecastTime = 0;
-	//	return true;
-	//};
-
 protected:
-	int attackNumOld//!弱/強攻撃が何段目か
-		, waitNextAttack//!弱/強攻撃受付時間
-		, isCharge//!攻撃のチャージ中か(0.チャージしてない 1.チャージ中 2.解放)
-		, chargeLevel//!攻撃のチャージ段階
-		, chargeTime//!チャージ時間
-		, isAwakening = 0//覚醒中か
-		, voiceStartNum//!音声データコンテナ内の声データの初期値
-		, guardEfcHandle, chargeEfcHandle, healEfcHandle, impactEfcHandle, waitBlowTime
-		, insGuardEfcHandle, insHealEfcHandle;
+	int airDashCoolTime;
 	float spd//!キャラの移動速度
 		, dodgeDir;//!キャラの回避方向
 	bool isAnimEnd//!アニメーション再生が終わっているか
@@ -220,7 +194,8 @@ protected:
 		, isBlow;
 	float atkBuff = 0.f;//!加算攻撃バフ値
 	bool isGhost//!別キャラとのすり抜けを許可するか
-		, deadVoice = false;//!死亡音声の再生はしたか
+		, deadVoice = false//!死亡音声の再生はしたか
+		, lClickTrgCheck;
 	int immortalTime//!無敵時間
 		, isCounter = 0;//!カウンター状態か
 	int walkTime//!キャラ移動開始からの経過時間

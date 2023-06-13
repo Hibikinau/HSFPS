@@ -39,13 +39,8 @@ public:
 
 public:
 	ModeServer* _modeServer;
-	int _x, _y;
-	int testAttackF, HPgaugeHandle, HPgaugeHandleWaku, BPgaugeHandle, BPgaugeHandleWaku, HPstrHandle
-		, BPstrHandle, stunGaugeHandleWaku, stunGaugeHandle, stunGaugeHandle2, stunGaugeHandle3
-		, shadowMapHandle, animIndexOld, redTrailHamdle, whiteTrailHamdle, plRecastTimeX, plRecastTimeY, swordIcon, heatIcon
-		, swordGlitchAnimHandle[29], swordGlitchAnimNum, stunStrHandle, bossNameStrHandle, bossNamePosX
-		, recastMaxNumX, recastMaxNumY, plSetRecastTime, swordRecastIconHandle, sousaHandle, burstStrHandle, nearDeadHandle
-		, HPgaugeHandle2, HPgaugeHandle3, HPgaugeHandleWakuB;
+	int _x, _y, enemyPopCoolTime, score;
+	int reticleHandle = -1;
 	float spd, cameraDir, cameraLockDir, cameraNtDir, cameraHigh;
 	int startTime, countTime, FPS, FPScount;
 	bool isLockon, isGameOver = false, endVoice = false;
@@ -56,8 +51,6 @@ public:
 	std::vector<std::string> debugWardBox;
 	imputInf _imputInf;
 	valData* _valData;
-	std::vector<attackColl> mAllColl;
-	collCapsule testAttackCap;
 	statusInf plStatus, bossStatus;
 	std::vector<weaponEffect> atkEfc;
 	std::vector<popDamageInf> damageNumPopList;

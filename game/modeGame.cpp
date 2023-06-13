@@ -18,7 +18,6 @@ bool makeChar(modeG* insMG, Rserver* _rs, std::shared_ptr<CB> charPoint, const c
 	charPoint->setName(nameA);
 	charPoint->Initialize();
 	charPoint->setGroundInf(&insMG->stage);
-	charPoint->allColl = &insMG->mAllColl;
 	charPoint->getInputKey(&insMG->_imputInf, &insMG->cameraDir, &insMG->cameraHigh);
 	insMG->charBox.emplace(nameA, std::move(charPoint));
 	return true;
@@ -58,12 +57,13 @@ bool	modeG::Initialize()
 	//SetUseASyncLoadFlag(true);
 	SetAlwaysRunFlag(true);
 	SetMouseDispFlag(false);
-	Effekseer_StartNetwork(60000);// ネットワーク機能を有効にする
+	SetupCamera_Perspective(1.5f);
 
 	_valData = &_modeServer->_valData;
-	modelImport("res/ZENRYOKUstage/tsStage.mv1", 10.f, &stage, &_modeServer->RS);
+	modelImport("res/レトロフューチャーステージ/レトロフューチャーステージ.pmx", 200.f, &stage, &_modeServer->RS);
+	modelImport("res/skyDoom/incskies_029_16k.x", 70.f, &skyDoom, &_modeServer->RS);
 	makeChar(this, &_modeServer->RS, std::make_unique<PL>(), Char_PL);
-
+	reticleHandle = _modeServer->RS.loadGraphR("res/reticle.png");
 	countTime = GetNowCount();
 
 
@@ -87,11 +87,11 @@ bool	modeG::Initialize()
 		changeScale(&i->second->_modelInf);
 	}
 	changeScale(&stage);
+	stage.pos = VGet(0, 0, 0);
 	changeScale(&skyDoom);
 	changeScale(&sakuHandle);
 
-	//ステージの当たり判定作成
-	//MV1SetupCollInfo(stage.modelHandle, -1, 32, 6, 32);
+	score = 0.f;
 	isLockon = true;
 
 	return true;
@@ -100,6 +100,7 @@ bool	modeG::Initialize()
 bool	modeG::Process()
 {
 	plStatus = { 0.f };
+	std::vector<std::string> deadEnemyList;
 	for (auto i = charBox.begin(); i != charBox.end(); ++i)
 	{
 		if (i->second->getType() == 1)
@@ -108,30 +109,33 @@ bool	modeG::Process()
 			i->second->gravity();
 			plMI = i->second->getInf();
 			plStatus = i->second->getStatus();
-			plRecastTimeX = i->second->caRecastX;
-			plRecastTimeY = i->second->caRecastY;
-			plSetRecastTime = i->second->setRecastTime;
 		}
 		else
 		{
 			i->second->Process();
 			bossMI = i->second->getInf();
-			i->second->gravity();
+			//i->second->gravity();
 			bossStatus = i->second->getStatus();
 
 			std::vector<std::unique_ptr<bullet> >* _bulletData = &charBox.find(Char_PL)->second->bulletData;
-			for (int j = 0; j < _bulletData->size(); j++)
+			auto dataSize = _bulletData->size();
+			for (int j = 0; j < dataSize; j++)
 			{
 				if (i->second->hitCheck(_bulletData->at(j)->_modelInf.pos, _bulletData->at(j)->_modelInf.vec, _bulletData->at(j)->damage, _bulletData->at(j)->bulletRadius))
 				{
-					i->second->Terminate();
-					charBox.erase(i);
+					deadEnemyList.emplace_back(i->first);
+					break;
 				}
 			}
 		}
-
 	}
-
+	for (std::string deadEnemyName : deadEnemyList)
+	{
+		charBox.find(deadEnemyName)->second->Terminate();
+		charBox.erase(deadEnemyName);
+		score += 200;
+	}
+	if (charBox.size() <= 1) { score += 10; }
 
 	//コマンド呼び出し部分
 	useCommand();
@@ -141,40 +145,18 @@ bool	modeG::Process()
 
 	GetMousePoint(&XBuf, &YBuf);
 	SetMousePoint(640, 360);
-	cameraDir -= (640 - XBuf) * 0.05;
-	cameraHigh += (360 - YBuf) * 0.05;
+	cameraDir -= (640 - XBuf) * 0.07;
+	cameraHigh += (360 - YBuf) * 0.07;
 
 	cameraMove();
 	SetCameraPositionAndTarget_UpVecY(cameraPos, cameraFor);
 	Effekseer_Sync3DSetting();
 
-	//影の明るさ調整-----------------------------------------
-	if (CheckHitKey(KEY_INPUT_UP)) { bright += .01f; }
-	if (CheckHitKey(KEY_INPUT_DOWN)) { bright -= .01f; }
-	if (bright < 0) { bright = 0; }
-	if (bright > 1) { bright = 1; }
 	SetGlobalAmbientLight(GetColorF(bright, bright, bright, 0.0f));
-	debugWardBox.emplace_back("影の明るさ  = " + std::to_string(bright));
-	debugWardBox.emplace_back("自機のHP = " + std::to_string(plStatus.hitPoint));
-	debugWardBox.emplace_back("自機のBP = " + std::to_string(plStatus.bloodPoint));
-	debugWardBox.emplace_back(std::to_string(
-		(std::atan2(-_imputInf.lStickX, _imputInf.lStickY) * 180.f) / DX_PI_F));
-	debugWardBox.emplace_back("入れ替え技Xのリキャスト = " + std::to_string(plRecastTimeX));
-	debugWardBox.emplace_back("入れ替え技Yのリキャスト = " + std::to_string(plRecastTimeY));
-	debugWardBox.emplace_back("現在のFPS値/" + std::to_string(FPS));
-	debugWardBox.emplace_back("弱攻撃1のフレーム数/" + std::to_string(_valData->plAtkSpd1));
-	debugWardBox.emplace_back("弱攻撃2のフレーム数/" + std::to_string(_valData->plAtkSpd2));
-	debugWardBox.emplace_back("弱攻撃3のフレーム数/" + std::to_string(_valData->plAtkSpd3));
-	debugWardBox.emplace_back("弱攻撃4のフレーム数/" + std::to_string(_valData->plAtkSpd4));
-	debugWardBox.emplace_back("ガード出だしのモーションスピード/" + std::to_string(_valData->counterSpd));
-	debugWardBox.emplace_back("カウンターの総受付時間/" + std::to_string(_valData->_counterTime));
-	debugWardBox.emplace_back("残りのカウンター受付時間/" + std::to_string(_valData->plCTimeN));
 	debugWardBox.emplace_back("x." + std::to_string(static_cast<int>(plMI->pos.x))
 		+ "/y." + std::to_string(static_cast<int>(plMI->pos.y))
 		+ "/z." + std::to_string(static_cast<int>(plMI->pos.z)));
-
-	//当たり判定計算呼び出し
-	//collHitCheck();
+	debugWardBox.emplace_back(std::to_string(score));
 
 	//メニュー画面呼び出し
 	if (_imputInf._gTrgb[KEY_INPUT_M] || _imputInf._gTrgp[XINPUT_BUTTON_START])
@@ -187,14 +169,20 @@ bool	modeG::Process()
 		_valData->hitstopF = 10;
 	}
 
-	if (_imputInf._gTrgb[KEY_INPUT_E])
+	if (enemyPopCoolTime <= 0)
 	{
-		std::string insName = "enemy";
-		insName += enemyNum;
-		enemyNum++;
-		makeChar(this, &_modeServer->RS, std::make_shared<EN>(), insName.c_str());
+		auto popNum = 7 + rand() % 5;
+		for (int i = 0; i < popNum; i++)
+		{
+			std::string insName = "enemy";
+			insName += std::to_string(enemyNum);
+			enemyNum++;
+			makeChar(this, &_modeServer->RS, std::make_shared<EN>(), insName.c_str());
+		}
+
+		enemyPopCoolTime = 240 + rand() % 60;
 	}
-	if (_imputInf._gTrgb[KEY_INPUT_A]) { swordGlitchAnimNum = 0; }
+	else { enemyPopCoolTime--; }
 	// Effekseerにより再生中のエフェクトを更新する。
 	UpdateEffekseer3D();
 	return true;
@@ -202,29 +190,15 @@ bool	modeG::Process()
 
 bool	modeG::Render()
 {
+	SetCameraNearFar(100.f, 90000.f);
 	MV1DrawModel(skyDoom.modelHandle);
-
-	//シャドウマップココカラ-----------------------------------------
-	ShadowMap_DrawSetup(ShadowMapHandle);
 	//3dモデルの描画
 	MV1DrawModel(stage.modelHandle);
+
 	for (auto i = charBox.begin(); i != charBox.end(); ++i)
 	{
-		//if (i->second->drawStopF > 0) { i->second->drawStopF--; i->second->Render(0); }
 		i->second->Render(1);
 	}
-
-	ShadowMap_DrawEnd();
-	SetUseShadowMap(0, ShadowMapHandle);
-	//影用の3dモデルの描画
-	MV1DrawModel(stage.modelHandle);
-	for (auto i = charBox.begin(); i != charBox.end(); ++i)
-	{
-		i->second->Render(0);
-	}
-
-	SetUseShadowMap(0, -1);
-	//シャドウマップここまで-----------------------------------------
 
 	int nowTime = GetNowCount();
 	if (countTime + 1000 <= nowTime) { FPS = FPScount, FPScount = 0, countTime += 1000; }
@@ -239,26 +213,9 @@ bool	modeG::Render()
 		auto a = DrawBillboard3D(VAdd(cameraFor, VGet(0, 170, 0)), .5, .5, 100, 0, lockOnMarkerHandle[LOMarkerNum], true);
 	}
 
-	if (plStatus.hitPoint < 70)
-	{//nearDeadHandle
-		DrawGraph(0, 0, nearDeadHandle, true);
-	}
-
 	drawUI();
 	SetUseZBuffer3D(TRUE);
 
-	debugWardBox.emplace_back(std::to_string(plMI->playTime));
-	debugWardBox.emplace_back(std::to_string(plMI->playTimeOld));
-	//debugWardBox.emplace_back("-------武器セット一覧-------");
-	debugWardBox.emplace_back("-------コマンド一覧-------");
-	debugWardBox.emplace_back("/debug(デバッグモードの切り替え)");
-	debugWardBox.emplace_back("/menu(メニュー画面表示)");
-	debugWardBox.emplace_back("/atkF1 ~ 4^フレーム数^(自機の1 ~ 4番目の攻撃モーションの総フレーム数変更)");
-	debugWardBox.emplace_back("/atkFall^フレーム数^(自機のすべての攻撃モーションの総フレーム数変更)");
-	debugWardBox.emplace_back("/GSpd^フレーム数^(ガード出だしのモーションの速さ)");
-	debugWardBox.emplace_back("/CTime^フレーム数^(カウンターの受付時間、標準で40)");
-	debugWardBox.emplace_back("/effectChange^ファイル名^^スケール^(Eキーで再生されるエフェクトの変更、拡張子不要/resからの相対パス必要)");
-	debugWardBox.emplace_back("/csv(csvファイル更新)");
 	for (int i = 0; i < debugWardBox.size() && debugMode; i++)
 	{
 		int sizeX, sizeY, lineCount;
@@ -268,44 +225,11 @@ bool	modeG::Render()
 	}
 	debugWardBox.clear();
 
+	DrawGraph(0, 0, reticleHandle, true);
+	//DrawCircle(640, 360, 5, GetColor(255, 255, 255), true);
+
 	return true;
 }
-//
-//bool	modeG::collHitCheck()
-//{
-//	for (int i = 0; i < mAllColl.size(); i++)
-//	{//
-//		if (mAllColl.at(i).nonActiveTimeF > 0) { mAllColl.at(i).nonActiveTimeF--; }
-//		else if (mAllColl.at(i).activeTimeF > 0) { mAllColl.at(i).activeTimeF--; }
-//		else
-//		{
-//			atkEfc.emplace_back(mAllColl.at(i).rightingEfc);
-//			mAllColl.erase(mAllColl.begin() + i);
-//		}
-//	}
-//
-//	for (auto i = charBox.begin(); i != charBox.end(); i++)
-//	{
-//		VECTOR hitPos = { -1 }, hitDir = { -1 };
-//		float _damage;
-//		if (i->second->hitCheck(i->first.c_str(), &hitPos, &hitDir, &_damage))
-//		{
-//			popDamageInf insDamage;
-//			insDamage.pos = hitPos;
-//			insDamage.damage = _damage;
-//			insDamage.isPl = i->first == Char_PL;
-//			damageNumPopList.emplace_back(insDamage);
-//
-//			auto a = PlayEffekseer3DEffect(_valData->efcHandle);
-//			SetPosPlayingEffekseer3DEffect(a, hitPos.x, hitPos.y, hitPos.z);
-//			auto D = 45;
-//			SetRotationPlayingEffekseer3DEffect(a, hitDir.x - D, hitDir.y - D, hitDir.z - D);
-//			SetScalePlayingEffekseer3DEffect(a, 2, 2, 2);
-//		}
-//	}
-//
-//	return true;
-//}
 
 bool	modeG::Terminate()
 {
@@ -316,7 +240,6 @@ bool	modeG::Terminate()
 	MV1DeleteModel(sakuHandle.modelHandle);
 
 	for (auto i = charBox.begin(); i != charBox.end(); ++i) { i->second->Terminate(); i->second.reset(); }
-	mAllColl.clear();
 	charBox.clear();
 	debugWardBox.clear();
 	DeleteLightHandleAll();
@@ -330,7 +253,7 @@ void modeG::cameraMove()
 	VECTOR InsV = VGet(sin(radian) * 10, 0, cos(radian) * 10);
 	auto _pos = cameraPos = VAdd(plMI->pos, VGet(0, 0, 0));
 	cameraFor = VAdd(plMI->pos, InsV);
-	cameraFor.y += (cameraHigh * DX_PI_F / 180.0f) * 10;
+	cameraFor.y += cameraHigh * 0.35f;
 
 }
 
@@ -400,6 +323,16 @@ int modeG::useCommand()
 			if (data == "kill")
 			{
 				charBox[Char_PL]->_statusInf.hitPoint = 0;
+			}
+			if (data == "allKill")
+			{
+				std::vector<std::string> nameList;
+				for (auto _name : charBox)
+				{
+					if (_name.first == Char_PL) { continue; }
+					nameList.emplace_back(_name.first);
+				}
+				for (auto _name : nameList) { charBox.erase(_name); }
 			}
 			if (data == "csv")
 			{

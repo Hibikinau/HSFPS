@@ -3,8 +3,7 @@ using namespace model;
 
 bool bullet::Initialize()
 {
-	//modelImport("res/ZENRYOKUstage/Stage1.mv1", 10.f, &_modelInf, RS);
-	bulletRadius = 30.f;
+	bulletRadius = 5.f;
 	damage = 2;
 	deadCount = 100;
 
@@ -23,7 +22,8 @@ bool bullet::Process()
 
 bool bullet::Render()
 {
-	DrawSphere3D(_modelInf.pos, bulletRadius, 16, GetColor(255, 0, 0), GetColor(0, 0, 0), true);
+	DrawSphere3D(_modelInf.pos, bulletRadius, 16, GetColor(255, 0, 0), GetColor(255, 50, 50), true);
+	DrawLine3D(_modelInf.pos, VSub(_modelInf.pos,VScale(_modelInf.vec, 3)), GetColor(255, 20, 20));
 
 	return true;
 }

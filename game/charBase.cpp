@@ -6,7 +6,6 @@
  * \date   March 2023
  *********************************************************************/
 #include"charBase.h"
-
 using namespace model;
 
 VECTOR CB::getDirVecP(float dir, int powar)
@@ -33,14 +32,14 @@ bool	CB::gravity()
 			_modelInf.vec.y -= g;
 			isGround = false;
 		}
-	//
-	//	//マップ(円)の中から出ないように
-	//	auto a = _modelInf.pos;
-	//	float c = sqrt(a.x * a.x + a.y * a.y + a.z * a.z);
-	//	if (c > 4600.f)
-	//	{
-	//		_modelInf.pos = VScale(VNorm(a), 4600.f);
-	//	}
+
+		//マップ(円)の中から出ないように
+		auto a = _modelInf.pos;
+		float c = sqrt(a.x * a.x + a.y * a.y + a.z * a.z);
+		if (c > 20000.f)
+		{
+			_modelInf.pos = VScale(VNorm(a), 20000.f);
+		}
 	return true;
 }
 
