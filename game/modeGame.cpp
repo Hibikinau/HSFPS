@@ -123,9 +123,9 @@ bool	modeG::Process()
 			bossMI = i->second->getInf();
 
 			std::vector<std::unique_ptr<bullet> >* _bulletData = &charBox.find(Char_PL)->second->bulletData;
-			auto dataSize = _bulletData->size();
-			for (int j = 0; j < dataSize; j++)
+			for (int j = 0; j < _bulletData->size(); j++)
 			{
+				if (_valData->bulletTime > 0) { break; }
 				if (i->second->hitCheck(_bulletData->at(j)->_modelInf.pos, _bulletData->at(j)->_modelInf.vec, _bulletData->at(j)->damage, _bulletData->at(j)->bulletRadius))
 				{
 					deadEnemyList.emplace_back(i->first);

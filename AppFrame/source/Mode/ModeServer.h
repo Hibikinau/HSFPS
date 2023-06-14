@@ -14,7 +14,7 @@
 
 struct valData
 {
-	int score, maxScore;
+	int score, maxScore, bulletTime;
 	bool isShutdown = false;
 };
 

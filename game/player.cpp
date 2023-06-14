@@ -77,6 +77,7 @@ bool	PL::Process()
 
 	for (auto ite = bulletData.begin(); ite != bulletData.end();)
 	{
+		if (_valData->bulletTime > 0) { break; }
 		if (!ite->get()->Process())
 		{
 			ite->get()->Terminate();
@@ -88,6 +89,10 @@ bool	PL::Process()
 	charMove(10, *_cameraDirX, true);
 
 	_modelInf.pos = VAdd(_modelInf.pos, _modelInf.vec);
+	if ((GetMouseInput() & MOUSE_INPUT_RIGHT) != 0) {
+		_valData->bulletTime = 10;
+	}
+	else { _valData->bulletTime--; }
 	if ((GetMouseInput() & MOUSE_INPUT_LEFT) != 0)
 	{
 		if (!lClickTrgCheck)
