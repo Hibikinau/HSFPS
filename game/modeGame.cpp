@@ -103,7 +103,7 @@ bool	modeG::Process()
 		return false;
 	}
 	else { FPScount++; }
-	debugWardBox.emplace_back("残り時間 : " + std::to_string(countTime + 60000 - nowTime));
+	debugWardBox.emplace_back("残り時間 : " + std::to_string((countTime + 60000 - nowTime) / 1000) + "s");
 	debugWardBox.emplace_back("現在のスコア : " + std::to_string(score));
 
 	plStatus = { 0.f };
