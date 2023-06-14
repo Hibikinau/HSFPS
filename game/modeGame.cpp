@@ -104,7 +104,7 @@ bool	modeG::Process()
 	}
 	else { FPScount++; }
 	debugWardBox.emplace_back("残り時間 : " + std::to_string((countTime + 60000 - nowTime) / 1000) + "s");
-	debugWardBox.emplace_back("現在のスコア : " + std::to_string(score));
+	debugWardBox.emplace_back("現在のスコア : " + std::to_string(score) + "pt");
 
 	plStatus = { 0.f };
 	std::vector<std::string> deadEnemyList;
